@@ -1,31 +1,32 @@
-from luma.core.interface.serial import spi
-from luma.lcd.device import st7735
-from PIL import Image, ImageDraw, ImageFont
 import time
+import board
+import digitalio
+from PIL import Image, ImageDraw
+from adafruit_rgb_display import st7735
 
-serial = spi(
-    port=0,
-    device=0,
-    gpio_DC=22,
-    gpio_RST=18,
-    bus_speed_hz=16000000
-)
+spi = board.SPI()
 
-device = st7735(
-    serial,
+cs = digitalio.DigitalInOut(board.CE0)
+dc = digitalio.DigitalInOut(board.D22)
+reset = digitalio.DigitalInOut(board.D18)
+
+display = st7735.ST7735R(
+    spi,
+    cs=cs,
+    dc=dc,
+    rst=reset,
     width=128,
     height=160,
-    rotate=0
+    rotation=0,
 )
 
-img = Image.new("RGB", (128, 160), "black")
-draw = ImageDraw.Draw(img)
+image = Image.new("RGB", (128, 160), "black")
+draw = ImageDraw.Draw(image)
 
 draw.rectangle((0, 0, 127, 159), outline="white")
-draw.text((10, 20), "Hello Jetson!", fill="green")
+draw.text((10, 20), "Hello Jetson", fill="green")
 draw.text((10, 50), "ST7735 TFT", fill="yellow")
-draw.text((10, 80), "128x160", fill="cyan")
 
-device.display(img)
+display.image(image)
 
 time.sleep(10)
